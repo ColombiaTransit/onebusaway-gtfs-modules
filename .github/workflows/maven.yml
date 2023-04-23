@@ -34,6 +34,19 @@ jobs:
       with:
         name: Package
         path: staging
+    - name: Get timestamp for release
+      id: timestamp
+        env:
+          TZ: Europe/Amsterdam
+        run: echo "timestamp=$(date +'Planetiles-%Y-%m-%dT%H-%M-%S')" >> $GITHUB_OUTPUT
+        
+    - name: Release new graph
+        uses: ncipollo/release-action@v1
+        if: github.ref == 'refs/heads/main'
+        with:
+          artifacts: staging/*.jar
+          tag: ${{ steps.timestamp.outputs.timestamp }}
+          makeLatest: true
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     #- name: Update dependency graph
