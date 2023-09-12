@@ -184,8 +184,8 @@ public class GtfsDaoImpl extends GenericDaoImpl implements GtfsMutableDao {
   }
 
   @Override
-  public Collection<FareContainer> getAllFareContainers() {
-    return getAllEntitiesForType(FareContainer.class);
+  public Collection<FareMedium> getAllFareMedia() {
+    return getAllEntitiesForType(FareMedium.class);
   }
 
   @Override
@@ -261,6 +261,9 @@ public class GtfsDaoImpl extends GenericDaoImpl implements GtfsMutableDao {
   public RouteNameException getRouteNameExceptionForId(AgencyAndId id) { return getEntityForId(RouteNameException.class, id);}
   public DirectionNameException getDirectionNameExceptionForId(AgencyAndId id) { return getEntityForId(DirectionNameException.class, id);}
 
+  public Collection<DirectionEntry> getAllDirectionEntries() {
+    return getAllEntitiesForType(DirectionEntry.class);
+  }
   public Collection<Facility> getAllFacilities() {
     return getAllEntitiesForType(Facility.class);
   }
@@ -277,6 +280,9 @@ public class GtfsDaoImpl extends GenericDaoImpl implements GtfsMutableDao {
     return getAllEntitiesForType(DirectionNameException.class);
   }
 
+  public Collection<WrongWayConcurrency> getAllWrongWayConcurrencies() {
+    return getAllEntitiesForType(WrongWayConcurrency.class);
+  }
   public Collection<Area> getAllAreas() {
     return getAllEntitiesForType(Area.class);
   }
@@ -289,6 +295,16 @@ public class GtfsDaoImpl extends GenericDaoImpl implements GtfsMutableDao {
     return getAllEntitiesForType(LocationGroup.class);
   }
 
+  @Override
+  public Collection<StopAreaElement> getAllStopAreaElements() {
+    return getAllEntitiesForType(StopAreaElement.class);
+  }
+
+  @Override
+  public Collection<StopArea> getAllStopAreas() {
+    return getAllEntitiesForType(StopArea.class);
+  }
+
   public Collection<Location> getAllLocations() {
     return getAllEntitiesForType(Location.class);
   }
@@ -299,11 +315,6 @@ public class GtfsDaoImpl extends GenericDaoImpl implements GtfsMutableDao {
 
   public Collection<Translation> getAllTranslations() {
     return getAllEntitiesForType(Translation.class);
-  }
-
-  @Override
-  public Collection<StopArea> getAllStopAreas() {
-    return getAllEntitiesForType(StopArea.class);
   }
 
   /****

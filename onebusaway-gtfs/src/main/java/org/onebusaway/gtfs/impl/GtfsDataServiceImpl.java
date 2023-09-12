@@ -105,8 +105,8 @@ public class GtfsDataServiceImpl implements GtfsDataService {
     }
 
     @Override
-    public Collection<FareContainer> getAllFareContainers() {
-        return _dao.getAllFareContainers();
+    public Collection<FareMedium> getAllFareMedia() {
+        return _dao.getAllFareMedia();
     }
 
     @Override
@@ -364,6 +364,16 @@ public class GtfsDataServiceImpl implements GtfsDataService {
     }
 
     @Override
+    public Collection<StopAreaElement> getAllStopAreaElements() {
+        return _dao.getAllStopAreaElements();
+    }
+
+    @Override
+    public Collection<StopArea> getAllStopAreas() {
+        return _dao.getAllStopAreas();
+    }
+
+    @Override
     public Collection<LocationGroup> getAllLocationGroups() {
         return _dao.getAllLocationGroups();
     }
@@ -381,11 +391,6 @@ public class GtfsDataServiceImpl implements GtfsDataService {
     @Override
     public Collection<Translation> getAllTranslations() {
         return _dao.getAllTranslations();
-    }
-
-    @Override
-    public Collection<StopArea> getAllStopAreas() {
-        return _dao.getAllStopAreas();
     }
 
     @Override
@@ -523,5 +528,11 @@ public class GtfsDataServiceImpl implements GtfsDataService {
     }
     public Collection<DirectionNameException> getAllDirectionNameExceptions() {
         return getAllEntitiesForType(DirectionNameException.class);
+    }
+    public Collection<DirectionEntry> getAllDirectionEntries() {
+        return _dao.getAllDirectionEntries();
+    }
+    public Collection<WrongWayConcurrency> getAllWrongWayConcurrencies() {
+        return _dao.getAllWrongWayConcurrencies();
     }
 }

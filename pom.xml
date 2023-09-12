@@ -7,7 +7,7 @@
   </parent>
 
   <artifactId>onebusaway-gtfs-modules</artifactId>
-  <version>1.4.4-SNAPSHOT</version>
+  <version>1.4.6-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>onebusaway-gtfs-modules</name>
@@ -105,9 +105,9 @@
             <version>${slf4j_version}</version>
         </dependency>
       <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-slf4j-impl</artifactId>
-        <version>2.20.0</version>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j_version}</version>
       </dependency>
       <dependency>
         <groupId>junit</groupId>
@@ -200,6 +200,7 @@
           <header>LICENSE.txt</header>
           <excludes combine.children="append">
             <exclude>**/ci.yml</exclude>
+            <exclude>**/simplelogger.properties</exclude>
           </excludes>
         </configuration>
       </plugin>
