@@ -68,8 +68,8 @@ public class MTAEntrancesStrategy implements GtfsTransformStrategy {
     private static final int LOCATION_TYPE_PAYGATE = 3;
     private static final int LOCATION_TYPE_GENERIC = 4;
 
-    private static final int WHEELCHAIR_ACCESSIBLE = 1;
-    private static final int NOT_WHEELCHAIR_ACCESSIBLE = 2;
+    static final int WHEELCHAIR_ACCESSIBLE = 1;
+    static final int NOT_WHEELCHAIR_ACCESSIBLE = 2;
 
     private static final String DEFAULT_MEZZ = "default";
 
@@ -82,7 +82,10 @@ public class MTAEntrancesStrategy implements GtfsTransformStrategy {
 
     @CsvField(ignore = true)
     private Set<AgencyAndId> stopIdsWithPathways = new HashSet<AgencyAndId>();
-    
+
+    @CsvField(ignore = true)
+    private Map<String, Stop> complexStopIds = new HashMap<>();
+
     @CsvField(ignore = true)
     private String agencyId;
 
@@ -109,6 +112,10 @@ public class MTAEntrancesStrategy implements GtfsTransformStrategy {
     private boolean createMissingLinks;
 
     private boolean contextualAccessibility;
+
+    @CsvField(optional = true)
+    private boolean markStopsAccessible = false;
+
 
     @CsvField(optional = true)
     private boolean skipStopsWithExistingPathways = true;
@@ -160,6 +167,7 @@ public class MTAEntrancesStrategy implements GtfsTransformStrategy {
             }
         }
 
+        _log.info("elevatorCsv={}, entrancesCsv={}, accessibleComplexFile={}", elevatorsCsv, entrancesCsv, accessibleComplexFile);
         agencyId = dao.getAllAgencies().iterator().next().getId();
 
         newStops = new HashSet<>();
@@ -225,6 +233,17 @@ public class MTAEntrancesStrategy implements GtfsTransformStrategy {
 
         if (elevatorsCsv != null) {
             readElevatorData(stopGroups, getComplexList(dao));
+        }
+
+        _log.info("found {} complex stops to mark as accessible and mark={}",
+                complexStopIds.size(), markStopsAccessible);
+        if (markStopsAccessible) {
+            for (String idOnly : complexStopIds.keySet()) {
+                Stop stop = complexStopIds.get(idOnly);
+                stop.setWheelchairBoarding(WHEELCHAIR_ACCESSIBLE);
+                _log.info("marking stop {} as accessible", stop.getId());
+                dao.updateEntity(stop);
+            }
         }
            
         for (Stop s : newStops) {
@@ -572,6 +591,7 @@ public class MTAEntrancesStrategy implements GtfsTransformStrategy {
                     if (stop == null)
                         _log.info("null stop: {}", id);
                     complex.add(stop);
+                    this.complexStopIds.put(id, stop);
                 }
                 complexes.put("complex-" + UUID.randomUUID(), complex);
             }
@@ -584,7 +604,7 @@ public class MTAEntrancesStrategy implements GtfsTransformStrategy {
     private Map<String, Stop> getStopMap(GtfsDao dao) {
         Map<String, Stop> map = new HashMap<>();
         for (Stop stop : dao.getAllStops()) {
-            if (stop.getLocationType() == 0) {
+            if (stop.getLocationType() == LOCATION_TYPE_STOP) {
                 map.put(stop.getId().getId(), stop);
             }
         }
@@ -742,6 +762,10 @@ public class MTAEntrancesStrategy implements GtfsTransformStrategy {
     }
     private String getNamespace(){
         return System.getProperty("cloudwatch.namespace");
+    }
+
+    public void setMarkStopsAccessible(boolean flag) {
+        markStopsAccessible = flag;
     }
 }
 
