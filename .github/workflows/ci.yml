@@ -5,36 +5,83 @@ on:
   pull_request:
     branches: [ master ]
 
-jobs:
-  build:
+env:
+  MAVEN_ARGS: "--no-transfer-progress -Dstyle.color=always"
 
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        locale: [ "en_US.utf8", "fr_FR.utf8" ]
+
+    env:
+      LANG: ${{ matrix.locale }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set locale to ${{ matrix.locale }}
+      run: |
+        lang=`echo "${{ matrix.locale }}" | head -c 2`
+        sudo apt-get -qq install -y language-pack-${lang}
+        
+        echo ""
+        
+        # list installed locales
+        echo "Available locales"
+        locale -a
+        sudo locale-gen ${{ matrix.locale }}
+        sudo update-locale LANG=${{ matrix.locale }}
+
+    - run: date
+
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        cache: 'maven'
+
+    - name: Test project with Maven
+      run: |
+        mvn $MAVEN_ARGS test package
+
+  cli-integration-tests:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-    - name: Set up JDK
-      uses: actions/setup-java@v1
-      with:
-        java-version: 11
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
 
-    - name: Cache Maven dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
+      - name: Run CLI integration tests
+        run: ./cli-tests/cli-tests.sh
 
-    - name: Test project with Maven
-      run: mvn --no-transfer-progress test install
+  container-image:
+    if: github.repository_owner == 'onebusaway' && github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
 
-    - name: Build documentation
-      run: mvn --no-transfer-progress site
+    env:
+      CONTAINER_REGISTRY_NAMESPACE: docker.io/opentransitsoftwarefoundation
+      CONTAINER_REGISTRY_USER: onebusawaybot
+      CONTAINER_REGISTRY_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-    - name: Deploy documentation to Github Pages
-      # only deploy after merging to master
-      if: github.repository_owner == 'OneBusAway' && github.event_name == 'push' && github.ref == 'refs/heads/master'
-      uses: JamesIves/github-pages-deploy-action@v4
-      with:
-        folder: target/site/
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Build container image tarball
+        run: |
+          MAVEN_SKIP_ARGS="-Dmaven.test.skip=true -Dmaven.source.skip=true"
+          mvn $MAVEN_ARGS $MAVEN_SKIP_ARGS package jib:build

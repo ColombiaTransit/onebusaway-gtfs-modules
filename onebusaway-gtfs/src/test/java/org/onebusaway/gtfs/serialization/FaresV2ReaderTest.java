@@ -15,20 +15,16 @@
  */
 package org.onebusaway.gtfs.serialization;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static  org.junit.jupiter.api.Assertions.assertEquals;
+import static  org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static  org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.onebusaway.csv_entities.exceptions.CsvEntityIOException;
 import org.onebusaway.gtfs.GtfsTestData;
 import org.onebusaway.gtfs.model.Agency;
@@ -39,11 +35,14 @@ import org.onebusaway.gtfs.model.FareProduct;
 import org.onebusaway.gtfs.model.FareTransferRule;
 import org.onebusaway.gtfs.model.RiderCategory;
 import org.onebusaway.gtfs.model.Route;
+import org.onebusaway.gtfs.model.Stop;
 import org.onebusaway.gtfs.model.StopAreaElement;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 import org.onebusaway.gtfs.services.MockGtfs;
 
 public class FaresV2ReaderTest extends BaseGtfsTest {
+
+  private static final String AGENCY_ID = "1";
 
   @Test
   public void turlockFaresV2() throws CsvEntityIOException, IOException {
@@ -88,6 +87,7 @@ public class FaresV2ReaderTest extends BaseGtfsTest {
     assertEquals("Youth Age 18 and Under", riderCat.getName());
     assertEquals(18, riderCat.getMaxAge());
     assertEquals(RiderCategory.MISSING_VALUE, riderCat.getMinAge());
+    assertEquals(0, riderCat.getIsDefaultFareCategory(), "isDefaultFareCategory not 0 when unspecified");
     assertEquals("http://www.turlocktransit.com/fares.html", riderCat.getEligibilityUrl());
 
     assertTrue(dao.hasFaresV1());
@@ -135,6 +135,26 @@ public class FaresV2ReaderTest extends BaseGtfsTest {
     assertEquals("charmcard_senior", medium.getId().getId());
     assertEquals("Senior CharmCard", medium.getName());
 
+    List<RiderCategory> riderCats = new ArrayList<>(dao.getAllRiderCategories());
+    assertEquals(5, riderCats.size());
+
+    RiderCategory riderCat = riderCats.stream().sorted(Comparator.comparing(RiderCategory::getId)).filter(c -> c.getId().getId().equals("reg")).findAny().get();
+    assertEquals("reg", riderCat.getId().getId());
+    assertEquals("Regular", riderCat.getName());
+    assertEquals(1, riderCat.getIsDefaultFareCategory());
+    assertEquals(RiderCategory.MISSING_VALUE, riderCat.getMaxAge());
+    assertEquals(RiderCategory.MISSING_VALUE, riderCat.getMinAge());
+    assertEquals("https://www.mta.maryland.gov/regular-fares", riderCat.getEligibilityUrl());
+
+    RiderCategory riderCat2 = riderCats.stream().sorted(Comparator.comparing(RiderCategory::getId)).filter(c -> c.getId().getId().equals("sen")).findAny().get();
+    assertEquals("sen", riderCat2.getId().getId());
+    assertEquals("Senior", riderCat2.getName());
+    assertEquals(0, riderCat2.getIsDefaultFareCategory());
+    assertEquals(RiderCategory.MISSING_VALUE, riderCat2.getMaxAge());
+    assertEquals(65, riderCat2.getMinAge());
+    assertEquals("https://www.mta.maryland.gov/senior-reduced-fare-program", riderCat2.getEligibilityUrl());
+
+
     List<StopAreaElement> stopAreaElements = new ArrayList<>(dao.getAllStopAreaElements());
     assertEquals(0, stopAreaElements.size());
 
@@ -144,6 +164,30 @@ public class FaresV2ReaderTest extends BaseGtfsTest {
 
     assertFalse(dao.hasFaresV1());
     assertTrue(dao.hasFaresV2());
+  }
+
+  @Test
+  public void pierceTransitStopAreas() throws CsvEntityIOException, IOException {
+    var dao = processFeed(GtfsTestData.getPierceTransitFlex(), AGENCY_ID, false);
+
+    var areaElements = List.copyOf(dao.getAllStopAreaElements());
+    assertEquals(12, areaElements.size());
+
+    var first = areaElements.get(0);
+    assertEquals("1_4210813", first.getArea().getId().toString());
+    var stop = first.getStop();
+    assertEquals("4210806", stop.getId().getId());
+    assertEquals("Bridgeport Way & San Francisco Ave SW (Northbound)", stop.getName());
+    assertSame(Stop.class, stop.getClass());
+
+    var area = areaElements.get(0);
+
+    assertSame(Stop.class, area.getStop().getClass());
+
+    var areas = List.copyOf(dao.getAllAreas());
+    assertEquals(1, areas.size());
+
+    areas.forEach(stopArea -> assertFalse(stopArea.getStops().isEmpty()));
   }
 
 

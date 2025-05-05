@@ -17,6 +17,7 @@ package org.onebusaway.gtfs.model;
 
 import org.onebusaway.csv_entities.schema.annotations.CsvField;
 import org.onebusaway.csv_entities.schema.annotations.CsvFields;
+import org.onebusaway.gtfs.annotations.Experimental;
 import org.onebusaway.gtfs.serialization.mappings.DefaultAgencyIdFieldMappingFactory;
 import org.onebusaway.gtfs.serialization.mappings.EntityFieldMappingFactory;
 import org.onebusaway.gtfs.serialization.mappings.TripAgencyIdFieldMappingFactory;
@@ -42,9 +43,6 @@ public final class Trip extends IdentityBean<AgencyAndId> {
   private String tripHeadsign;
 
   @CsvField(optional = true)
-  private String routeShortName;
-
-  @CsvField(optional = true)
   private String directionId;
 
   @CsvField(optional = true)
@@ -56,53 +54,34 @@ public final class Trip extends IdentityBean<AgencyAndId> {
   @CsvField(optional = true, defaultValue = "0")
   private int wheelchairAccessible = 0;
 
-  @CsvField(optional = true)
-  private String drtMaxTravelTime;
-
-  @CsvField(optional = true)
-  private String drtAvgTravelTime;
-
-  @CsvField(optional = true, defaultValue = "-1")
-  private double drtAdvanceBookMin;
-
-  @CsvField(optional = true)
-  private String drtPickupMessage;
-
-  @CsvField(optional = true)
-  private String drtDropOffMessage;
-
-  @CsvField(optional = true)
-  private String continuousPickupMessage;
-
-  @CsvField(optional = true)
-  private String continuousDropOffMessage;
-
-  @CsvField(optional = true)
-  private Double meanDurationFactor;
-
-  @CsvField(optional = true)
-  private Double meanDurationOffset;
-
-  @CsvField(optional = true)
-  private Double safeDurationFactor;
-
-  @CsvField(optional = true)
-  private Double safeDurationOffset;
-
-
-  @Deprecated
-  @CsvField(optional = true, defaultValue = "0")
-  private int tripBikesAllowed = 0;
-
   /**
    * 0 = unknown / unspecified, 1 = bikes allowed, 2 = bikes NOT allowed
    */
   @CsvField(optional = true, defaultValue = "0")
   private int bikesAllowed = 0;
 
-  // Custom extension for KCM to specify a fare per-trip
+  @Experimental(proposedBy = "https://github.com/MobilityData/gtfs-flex/pull/79")
   @CsvField(optional = true)
-  private String fareId;
+  private Double meanDurationFactor;
+
+  @Experimental(proposedBy = "https://github.com/MobilityData/gtfs-flex/pull/79")
+  @CsvField(optional = true)
+  private Double meanDurationOffset;
+
+  @Experimental(proposedBy = "https://github.com/MobilityData/gtfs-flex/pull/79")
+  @CsvField(optional = true)
+  private Double safeDurationFactor;
+
+  @Experimental(proposedBy = "https://github.com/MobilityData/gtfs-flex/pull/79")
+  @CsvField(optional = true)
+  private Double safeDurationOffset;
+
+  /**
+   * 0 = unknown / unspecified, 1 = cars allowed, 2 = cars NOT allowed
+   */
+  @Experimental(proposedBy="https://github.com/google/transit/issues/466")
+  @CsvField(optional = true, defaultValue = "0")
+  private int carsAllowed = 0;
 
   // Custom extension for MNR
   @CsvField(optional = true, name = "note_id", mapping = EntityFieldMappingFactory.class, order = -1)
@@ -135,25 +114,16 @@ public final class Trip extends IdentityBean<AgencyAndId> {
     this.serviceId = obj.serviceId;
     this.tripShortName = obj.tripShortName;
     this.tripHeadsign = obj.tripHeadsign;
-    this.routeShortName = obj.routeShortName;
     this.directionId = obj.directionId;
     this.blockId = obj.blockId;
     this.shapeId = obj.shapeId;
     this.wheelchairAccessible = obj.wheelchairAccessible;
-    this.drtMaxTravelTime = obj.drtMaxTravelTime;
-    this.drtAvgTravelTime = obj.drtAvgTravelTime;
-    this.drtAdvanceBookMin = obj.drtAdvanceBookMin;
-    this.drtPickupMessage = obj.drtPickupMessage;
-    this.drtDropOffMessage = obj.drtDropOffMessage;
-    this.continuousPickupMessage = obj.continuousPickupMessage;
-    this.continuousDropOffMessage = obj.continuousDropOffMessage;
     this.meanDurationFactor = obj.meanDurationFactor;
     this.meanDurationOffset = obj.meanDurationOffset;
     this.safeDurationFactor = obj.safeDurationFactor;
     this.safeDurationOffset = obj.safeDurationOffset;
-    this.tripBikesAllowed = obj.tripBikesAllowed;
     this.bikesAllowed = obj.bikesAllowed;
-    this.fareId = obj.fareId;
+    this.carsAllowed = obj.carsAllowed;
     this.note = obj.note;
     this.peakOffpeak = obj.peakOffpeak;
     this.mtaTripId = obj.mtaTripId;
@@ -200,14 +170,6 @@ public final class Trip extends IdentityBean<AgencyAndId> {
     this.tripHeadsign = tripHeadsign;
   }
 
-  public String getRouteShortName() {
-    return routeShortName;
-  }
-
-  public void setRouteShortName(String routeShortName) {
-    this.routeShortName = routeShortName;
-  }
-
   public String getDirectionId() {
     return directionId;
   }
@@ -238,62 +200,6 @@ public final class Trip extends IdentityBean<AgencyAndId> {
 
   public int getWheelchairAccessible() {
     return wheelchairAccessible;
-  }
-
-  public String getDrtMaxTravelTime() {
-    return drtMaxTravelTime;
-  }
-
-  public void setDrtMaxTravelTime(String drtMaxTravelTime) {
-    this.drtMaxTravelTime = drtMaxTravelTime;
-  }
-
-  public String getDrtAvgTravelTime() {
-    return drtAvgTravelTime;
-  }
-
-  public void setDrtAvgTravelTime(String drtAvgTravelTime) {
-    this.drtAvgTravelTime = drtAvgTravelTime;
-  }
-
-  public double getDrtAdvanceBookMin() {
-    return drtAdvanceBookMin;
-  }
-
-  public void setDrtAdvanceBookMin(double drtAdvanceBookMin) {
-    this.drtAdvanceBookMin = drtAdvanceBookMin;
-  }
-
-  public String getDrtPickupMessage() {
-    return drtPickupMessage;
-  }
-
-  public void setDrtPickupMessage(String drtPickupMessage) {
-    this.drtPickupMessage = drtPickupMessage;
-  }
-
-  public String getDrtDropOffMessage() {
-    return drtDropOffMessage;
-  }
-
-  public void setDrtDropOffMessage(String drtDropOffMessage) {
-    this.drtDropOffMessage = drtDropOffMessage;
-  }
-
-  public String getContinuousPickupMessage() {
-    return continuousPickupMessage;
-  }
-
-  public void setContinuousPickupMessage(String continuousPickupMessage) {
-    this.continuousPickupMessage = continuousPickupMessage;
-  }
-
-  public String getContinuousDropOffMessage() {
-    return continuousDropOffMessage;
-  }
-
-  public void setContinuousDropOffMessage(String continuousDropOffMessage) {
-    this.continuousDropOffMessage = continuousDropOffMessage;
   }
 
   public Double getMeanDurationFactor() {
@@ -328,16 +234,6 @@ public final class Trip extends IdentityBean<AgencyAndId> {
     this.safeDurationOffset = safeDurationOffset;
   }
 
-  @Deprecated
-  public void setTripBikesAllowed(int tripBikesAllowed) {
-    this.tripBikesAllowed = tripBikesAllowed;
-  }
-
-  @Deprecated
-  public int getTripBikesAllowed() {
-    return tripBikesAllowed;
-  }
-
   /**
    * @return 0 = unknown / unspecified, 1 = bikes allowed, 2 = bikes NOT allowed
    */
@@ -353,16 +249,23 @@ public final class Trip extends IdentityBean<AgencyAndId> {
     this.bikesAllowed = bikesAllowed;
   }
 
+  /**
+   * @return 0 = unknown / unspecified, 1 = cars allowed, 2 = cars NOT allowed
+   */
+  public int getCarsAllowed() {
+    return carsAllowed;
+  }
+
+  /**
+   * @param carsAllowed 0 = unknown / unspecified, 1 = cars allowed, 2 = cars
+   *          NOT allowed
+   */
+  public void setCarsAllowed(int carsAllowed) {
+    this.carsAllowed = carsAllowed;
+  }
+
   public String toString() {
     return "<Trip " + getId() + ">";
-  }
-  
-  public String getFareId() {
-	  return fareId;
-  }
-  
-  public void setFareId(String fareId) {
-	  this.fareId = fareId;
   }
 
   public Note getNote() {

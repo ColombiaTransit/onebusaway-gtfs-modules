@@ -185,6 +185,17 @@ public interface GtfsDao extends GenericDao {
   public Collection<Ridership> getAllRiderships();
 
   /****
+   * {@link Vehicle} Methods
+   ****/
+  Collection<Vehicle> getAllVehicles();
+
+  /****
+   * {@link Vehicle} Methods
+   ****/
+  Vehicle getVehicleForId(AgencyAndId id);
+
+
+  /****
    * {@link Area} Methods
    ****/
 
@@ -197,8 +208,6 @@ public interface GtfsDao extends GenericDao {
 
   public Collection<StopAreaElement> getAllStopAreaElements();
 
-  public Collection<StopArea> getAllStopAreas();
-
   public Collection<Location> getAllLocations();
 
   public Collection<BookingRule> getAllBookingRules();
@@ -208,6 +217,12 @@ public interface GtfsDao extends GenericDao {
    ****/
 
   public Collection<Translation> getAllTranslations();
+
+    /****
+   * {@link Network} Methods
+   ****/
+
+   public Collection<Network> getAllNetworks();
 
   public Collection<DirectionEntry> getAllDirectionEntries();
 

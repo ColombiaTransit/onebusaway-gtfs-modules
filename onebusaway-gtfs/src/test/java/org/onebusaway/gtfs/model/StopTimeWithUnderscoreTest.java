@@ -19,15 +19,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.onebusaway.gtfs.serialization.GtfsWriter;
 import org.onebusaway.gtfs.serialization.GtfsWriterTest;
 import org.onebusaway.gtfs.services.MockGtfs;
 import org.onebusaway.gtfs.services.GtfsRelationalDao;
 
-import static org.junit.Assert.*;
+import static  org.junit.jupiter.api.Assertions.*;
 
 public class StopTimeWithUnderscoreTest {
 
@@ -35,7 +35,7 @@ public class StopTimeWithUnderscoreTest {
 
     private File _tmpDirectory;
 
-    @Before
+    @BeforeEach
     public void before() throws IOException {
         _gtfs = MockGtfs.create();
 
@@ -71,7 +71,7 @@ public class StopTimeWithUnderscoreTest {
             }
         }
         // if the underscore version was input use it as output
-        assertTrue("Column without underscore was not found", foundUnderscoreParam);
+        assertTrue(foundUnderscoreParam, "Column without underscore was not found");
     }
 
     @Test
@@ -80,7 +80,7 @@ public class StopTimeWithUnderscoreTest {
         _gtfs.putDefaultTrips();
         _gtfs.putDefaultStops();
         _gtfs.putLines("stop_times.txt",
-                "trip_id,stop_id,stop_sequence,arrival_time,departure_time,end_pickup_dropoff_window",
+                "trip_id,stop_id,stop_sequence,arrival_time,departure_time,end_pickup_drop_off_window",
                 "T10-0,100,0,05:55:55,08:00:00,08:23:23", "T10-0,200,1,05:55:55,09:00:00,08:44:44");
 
         GtfsRelationalDao dao = _gtfs.read();
@@ -94,12 +94,12 @@ public class StopTimeWithUnderscoreTest {
         boolean foundUnderscoreParam = false;
         while(scan.hasNext()){
             String line = scan.nextLine();
-            if(line.contains("end_pickup_dropoff_window")){
+            if(line.contains("end_pickup_drop_off_window")){
                 foundUnderscoreParam = true;
             }
         }
         // if the new spec was used as input ensure it is output
-        assertTrue("Column without underscore was not found", foundUnderscoreParam);
+        assertTrue(foundUnderscoreParam, "Column without underscore was not found");
     }
 
     @Test
@@ -109,7 +109,7 @@ public class StopTimeWithUnderscoreTest {
         _gtfs.read();
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         deleteFileRecursively(_tmpDirectory);
     }

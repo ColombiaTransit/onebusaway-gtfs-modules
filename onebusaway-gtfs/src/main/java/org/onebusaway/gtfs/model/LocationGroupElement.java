@@ -20,25 +20,18 @@ import org.onebusaway.csv_entities.schema.annotations.CsvFields;
 import org.onebusaway.gtfs.serialization.mappings.DefaultAgencyIdFieldMappingFactory;
 import org.onebusaway.gtfs.serialization.mappings.StopLocationFieldMappingFactory;
 
-/**
- * Location groups have been merged with Fares V2's stop areas.
- *
- * Please update your code now as this class will be removed soon.
- */
-@Deprecated
-@CsvFields(filename = "location_groups.txt", required = false, prefix = "location_group_")
+@CsvFields(filename = "location_group_stops.txt", required = false, prefix = "location_group_")
 public class LocationGroupElement extends IdentityBean<Integer> {
 
     private static final long serialVersionUID = 1L;
 
-    @CsvField(ignore = true)
     private int id;
 
     @CsvField(name = "location_group_id", mapping = DefaultAgencyIdFieldMappingFactory.class)
     private AgencyAndId locationGroupId;
 
-    @CsvField(name = "location_id", mapping = StopLocationFieldMappingFactory.class)
-    private StopLocation location;
+    @CsvField(name = "stop_id", mapping = StopLocationFieldMappingFactory.class)
+    private StopLocation stop;
 
     @CsvField(optional = true)
     private String name;
@@ -60,12 +53,12 @@ public class LocationGroupElement extends IdentityBean<Integer> {
         this.locationGroupId = locationGroupId;
     }
 
-    public StopLocation getLocation() {
-        return location;
+    public StopLocation getStop() {
+        return stop;
     }
 
-    public void setLocation(StopLocation location) {
-        this.location = location;
+    public void setStop(StopLocation stop) {
+        this.stop = stop;
     }
 
     public String getName() {

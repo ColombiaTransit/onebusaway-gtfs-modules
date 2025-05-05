@@ -146,7 +146,9 @@ public class GtfsDaoImpl extends GenericDaoImpl implements GtfsMutableDao {
     return getAllEntitiesForType(Ridership.class);
   }
 
-  public Collection<Vehicle> getAllVehicles() { return getAllEntitiesForType(Vehicle.class); }
+  public Collection<Vehicle> getAllVehicles() {
+    return getAllEntitiesForType(Vehicle.class);
+  }
 
   public Collection<Level> getAllLevels() {
     return getAllEntitiesForType(Level.class);
@@ -253,6 +255,13 @@ public class GtfsDaoImpl extends GenericDaoImpl implements GtfsMutableDao {
     return getEntityForId(Level.class, id);
   }
 
+  public Vehicle getVehicleForId(AgencyAndId id) {
+    return getEntityForId(Vehicle.class, id);
+  }
+
+  public Collection<Network> getAllNetworks() {
+    return getAllEntitiesForType(Network.class);
+  }
 
 
   public Facility getFacilityForId(AgencyAndId id) { return getEntityForId(Facility.class, id);}
@@ -302,11 +311,6 @@ public class GtfsDaoImpl extends GenericDaoImpl implements GtfsMutableDao {
   @Override
   public Collection<StopAreaElement> getAllStopAreaElements() {
     return getAllEntitiesForType(StopAreaElement.class);
-  }
-
-  @Override
-  public Collection<StopArea> getAllStopAreas() {
-    return getAllEntitiesForType(StopArea.class);
   }
 
   public Collection<Location> getAllLocations() {

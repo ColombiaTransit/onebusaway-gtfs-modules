@@ -20,8 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 
 public class GtfsTransformerMain {
   
-  private static Logger _log = LoggerFactory.getLogger(GtfsTransformerMain.class);
+  private static final Logger LOG = LoggerFactory.getLogger(GtfsTransformerMain.class);
 
   /****
    * Generic Arguments
@@ -87,9 +87,9 @@ public class GtfsTransformerMain {
 
   private static final String ARG_OVERWRITE_DUPLICATES = "overwriteDuplicates";
 
-  private static CommandLineParser _parser = new PosixParser();
+  private static final CommandLineParser parser = new PosixParser();
 
-  private Options _options = new Options();
+  private final Options options = new Options();
 
   public static void main(String[] args) throws IOException {
     GtfsTransformerMain m = new GtfsTransformerMain();
@@ -98,7 +98,7 @@ public class GtfsTransformerMain {
 
   public GtfsTransformerMain() {
 
-    buildOptions(_options);
+    buildOptions(options);
   }
 
   /*****************************************************************************
@@ -113,13 +113,9 @@ public class GtfsTransformerMain {
     }
 
     try {
-      CommandLine cli = _parser.parse(_options, args, true);
+      CommandLine cli = parser.parse(options, args, true);
       runApplication(cli, args);
-    } catch (MissingOptionException ex) {
-      System.err.println("Missing argument: " + ex.getMessage());
-      printHelp();
-      System.exit(-2);
-    } catch (MissingArgumentException ex) {
+    } catch (MissingOptionException | MissingArgumentException ex) {
       System.err.println("Missing argument: " + ex.getMessage());
       printHelp();
       System.exit(-2);
@@ -177,11 +173,11 @@ public class GtfsTransformerMain {
         "overwrite duplicate elements");
   }
 
-  protected void printHelp(PrintWriter out, Options options) throws IOException {
+  private void printHelp() throws IOException {
 
     InputStream is = getClass().getResourceAsStream("usage.txt");
     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-    String line = null;
+    String line;
 
     while ((line = reader.readLine()) != null) {
       System.err.println(line);
@@ -193,22 +189,22 @@ public class GtfsTransformerMain {
   protected void runApplication(CommandLine cli, String[] originalArgs)
       throws Exception {
 
-    String[] args = cli.getArgs();
+    var args = Arrays.stream(cli.getArgs()).toList();
 
-    if (args.length < 2) {
+    if (args.size() < 2) {
       printHelp();
       System.exit(-1);
     }
 	
-    List<File> paths = new ArrayList<File>();
-    for (int i = 0; i < args.length - 1; ++i) {
-      paths.add(new File(args[i]));
-      _log.info("input path: " + args[i]);
-    }
+    List<File> inputPaths = args.stream().limit(args.size() - 1).map(File::new).toList();
+    LOG.info("input paths: {}", inputPaths);
+
     GtfsTransformer transformer = new GtfsTransformer();
-    transformer.setGtfsInputDirectories(paths);
-    transformer.setOutputDirectory(new File(args[args.length - 1]));
-    _log.info("output path: " + args[args.length - 1]);
+    transformer.setGtfsInputDirectories(inputPaths);
+
+    var outputPath = new File(args.get(args.size() - 1));
+    transformer.setOutputDirectory(outputPath);
+    LOG.info("output path: {}", outputPath);
     
     Option[] options = getOptionsInCommandLineOrder(cli, originalArgs);
 
@@ -371,14 +367,6 @@ public class GtfsTransformerMain {
     updater.addParameter("verifyRoutesFile", file);
   }
 
-  /*****************************************************************************
-   * Protected Methods
-   ****************************************************************************/
-
-  protected void printHelp() throws IOException {
-    printHelp(new PrintWriter(System.err, true), _options);
-  }
-
   private boolean needsHelp(String[] args) {
     for (String arg : args) {
       if (arg.equals("-h") || arg.equals("--help") || arg.equals("-help"))
@@ -389,9 +377,9 @@ public class GtfsTransformerMain {
 
   private static class Ordered<T> implements Comparable<Ordered<T>> {
 
-    private T _object;
+    private final T _object;
 
-    private int _order;
+    private final int _order;
 
     public Ordered(T object, int order) {
       _object = object;

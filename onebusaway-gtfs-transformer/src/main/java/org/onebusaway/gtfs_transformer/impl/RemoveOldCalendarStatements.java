@@ -15,19 +15,33 @@
  */
 package org.onebusaway.gtfs_transformer.impl;
 
-import org.onebusaway.gtfs.model.ServiceCalendar;
-import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
-import org.onebusaway.gtfs_transformer.services.GtfsTransformStrategy;
-import org.onebusaway.gtfs_transformer.services.TransformContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashSet;
 import java.util.Set;
 
-public class RemoveOldCalendarStatements implements GtfsTransformStrategy {
+import org.onebusaway.csv_entities.schema.annotations.CsvField;
+import org.onebusaway.gtfs.model.ServiceCalendar;
+import org.onebusaway.gtfs.model.ServiceCalendarDate;
+import org.onebusaway.gtfs.services.GtfsMutableRelationalDao;
+import org.onebusaway.gtfs_transformer.services.GtfsTransformStrategy;
+import org.onebusaway.gtfs_transformer.services.TransformContext;
+import org.onebusaway.gtfs_transformer.util.CalendarFunctions;
 
-    private final Logger _log = LoggerFactory.getLogger(RemoveOldCalendarStatements.class);
+/**
+ * Remove calendar dates that are past.
+ *
+ * remove_today: delete today's calendar dates if true. Default value is false
+ */
+public class RemoveOldCalendarStatements implements GtfsTransformStrategy {
+    @CsvField(optional = true)
+    private boolean removeToday = false;
+
+    @CsvField(ignore = true)
+    private CalendarFunctions helper = new CalendarFunctions();
+
+    public void setRemoveToday(boolean removeToday) {
+        this.removeToday = removeToday;
+    }
+
     @Override
     public String getName() {
         return this.getClass().getSimpleName();
@@ -37,14 +51,30 @@ public class RemoveOldCalendarStatements implements GtfsTransformStrategy {
     public void run(TransformContext transformContext, GtfsMutableRelationalDao gtfsMutableRelationalDao) {
         RemoveEntityLibrary removeEntityLibrary = new RemoveEntityLibrary();
         Set<ServiceCalendar> serviceCalendarsToRemove = new HashSet<ServiceCalendar>();
-        for (ServiceCalendar calendar: gtfsMutableRelationalDao.getAllCalendars()) {
-            java.util.Date today = new java.util.Date();
-            if (calendar.getEndDate().getAsDate().before(today)){
+        java.util.Date today = new java.util.Date();
+
+        if (!removeToday) {
+            today = helper.removeTime(today);
+        }
+
+        for (ServiceCalendar calendar : gtfsMutableRelationalDao.getAllCalendars()) {
+            if (calendar.getEndDate().getAsDate().before(today)) {
                 serviceCalendarsToRemove.add(calendar);
             }
         }
         for (ServiceCalendar serviceCalendar : serviceCalendarsToRemove) {
             removeEntityLibrary.removeCalendar(gtfsMutableRelationalDao, serviceCalendar.getServiceId());
+        }
+
+        Set<ServiceCalendarDate> serviceCalendarDatesToRemove = new HashSet<ServiceCalendarDate>();
+        for (ServiceCalendarDate calendarDate : gtfsMutableRelationalDao.getAllCalendarDates()) {
+            if (calendarDate.getDate().getAsDate().before(today)) {
+                serviceCalendarDatesToRemove.add(calendarDate);
+            }
+        }
+        for (ServiceCalendarDate serviceCalendarDate : serviceCalendarDatesToRemove) {
+            // here we can't delete the trips as the serviceid may be active elsewhere
+            removeEntityLibrary.removeServiceCalendarDate(gtfsMutableRelationalDao, serviceCalendarDate);
         }
     }
 }

@@ -1,0 +1,58 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
+  ],
+  prConcurrentLimit: 3,
+  rebaseWhen: 'conflicted',
+  labels: [
+    'dependencies',
+  ],
+  packageRules: [
+    {
+      description: 'Automerge test dependencies in a single PR',
+      groupName: 'Test dependencies',
+      matchPackageNames: [
+        'org.mockito:mockito-core',
+        'com.tngtech.archunit:archunit',
+        'org.apache.maven.plugins:maven-surefire-plugin',
+        'me.fabriciorby:maven-surefire-junit5-tree-reporter',
+        'com.google.truth:truth',
+        'org.jacoco:jacoco-maven-plugin',
+        'org.apache.commons:commons-compress',
+        'org.junit.jupiter:{/,}**',
+      ],
+      automerge: true,
+      schedule: 'on the 17th day of the month',
+    },
+    {
+      description: 'Automerge Maven plugins in a single PR',
+      groupName: 'Maven plugins',
+      schedule: 'on the 23rd day of the month',
+      automerge: true,
+      matchPackageNames: [
+        'org.apache.maven.plugins:{/,}**',
+        'org.sonatype.central:central-publishing-maven-plugin'
+      ],
+    },
+    {
+      description: 'Automerge logging dependencies in a single PR',
+      groupName: 'logging dependencies',
+      automerge: true,
+      schedule: 'on the 4th day of the month',
+      matchPackageNames: [
+        'org.slf4j:{/,}**',
+        'ch.qos.logback:{/,}**',
+      ],
+    },
+    {
+      description: 'Automerge dependencies',
+      matchPackageNames: [
+        'io.github.classgraph:classgraph',
+      ],
+      automerge: true,
+      schedule: 'monthly',
+    },
+  ],
+  timezone: 'Europe/Berlin',
+}

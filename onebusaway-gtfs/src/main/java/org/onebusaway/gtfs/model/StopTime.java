@@ -42,8 +42,18 @@ public final class StopTime extends IdentityBean<Integer> implements
   @CsvField(name = "trip_id", mapping = EntityFieldMappingFactory.class)
   private Trip trip;
 
-  @CsvField(name = "stop_id", mapping = StopLocationFieldMappingFactory.class)
+  /**
+   * This is optional because in flex you can also have location_id and location_group_id.
+   */
+  @CsvField(name = "stop_id", optional = true, mapping = StopLocationFieldMappingFactory.class)
   private StopLocation stop;
+
+  @CsvField(name = "location_id", optional = true, mapping = StopLocationFieldMappingFactory.class)
+  private StopLocation location;
+
+  @CsvField(name = "location_group_id", optional = true, mapping = StopLocationFieldMappingFactory.class)
+  private StopLocation locationGroup;
+
 
   @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class)
   private int arrivalTime = MISSING_VALUE;
@@ -51,43 +61,11 @@ public final class StopTime extends IdentityBean<Integer> implements
   @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class)
   private int departureTime = MISSING_VALUE;
 
-  /**
-   * @deprecated
-   * GTFS-Flex v2.1 renamed this field. Use {@link #startPickupDropOffWindow} instead.
-   */
-  @Deprecated
-  @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class, defaultValue = "-999")
-  private int minArrivalTime = MISSING_VALUE;
-
   @CsvField(optional = true, name = "start_pickup_drop_off_window", mapping = StopTimeFieldMappingFactory.class, defaultValue = "-999")
   private int startPickupDropOffWindow = MISSING_VALUE;
 
-  /**
-   * @deprecated
-   * GTFS-Flex v2.1 renamed "dropoff" to "drop off": https://github.com/MobilityData/gtfs-flex/commit/547200dfb580771265ae14b07d9bfd7b91c16ed2
-   */
-  @Deprecated
-  @CsvField(optional = true, name = "start_pickup_dropoff_window", mapping = StopTimeFieldMappingFactory.class, defaultValue = "-999")
-  public int oldSpellingOfStartPickupDropOffWindow = MISSING_VALUE;
-
-  /**
-   * @deprecated
-   * GTFS-Flex v2.1 renamed this field. Use {@link #endPickupDropOffWindow} instead.
-   */
-  @Deprecated
-  @CsvField(optional = true, mapping = StopTimeFieldMappingFactory.class, defaultValue = "-999")
-  private int maxDepartureTime = MISSING_VALUE;
-
   @CsvField(optional = true, name = "end_pickup_drop_off_window", mapping = StopTimeFieldMappingFactory.class, defaultValue = "-999")
   private int endPickupDropOffWindow = MISSING_VALUE;
-
-  /**
-   * @deprecated
-   * GTFS-Flex v2.1 renamed "dropoff" to "drop off": https://github.com/MobilityData/gtfs-flex/commit/547200dfb580771265ae14b07d9bfd7b91c16ed2
-   */
-  @Deprecated
-  @CsvField(optional = true, name = "end_pickup_dropoff_window", mapping = StopTimeFieldMappingFactory.class, defaultValue = "-999")
-  public int oldSpellingOfEndPickupDropOffWindow = MISSING_VALUE;
 
   @CsvField(optional = true, defaultValue = "-999")
   private int timepoint = MISSING_VALUE;
@@ -182,9 +160,7 @@ public final class StopTime extends IdentityBean<Integer> implements
     this.dropOffType = st.dropOffType;
     this.id = st.id;
     this.pickupType = st.pickupType;
-    this.minArrivalTime = st.minArrivalTime;
     this.startPickupDropOffWindow = st.startPickupDropOffWindow;
-    this.maxDepartureTime = st.maxDepartureTime;
     this.endPickupDropOffWindow = st.endPickupDropOffWindow;
     this.continuousPickup = st.continuousPickup;
     this.continuousDropOff = st.continuousDropOff;
@@ -192,6 +168,8 @@ public final class StopTime extends IdentityBean<Integer> implements
     this.shapeDistTraveled = st.shapeDistTraveled;
     this.farePeriodId = st.farePeriodId;
     this.stop = st.stop;
+    this.location = st.location;
+    this.locationGroup = st.locationGroup;
     this.stopHeadsign = st.stopHeadsign;
     this.stopSequence = st.stopSequence;
     this.toStopSequence = st.toStopSequence;
@@ -266,11 +244,47 @@ public final class StopTime extends IdentityBean<Integer> implements
     this.toStopSequence = toStopSequence;
   }
 
+  @Override
   public StopLocation getStop() {
     if (proxy != null) {
       return proxy.getStop();
     }
     return stop;
+  }
+
+  @Override
+  public StopLocation getLocation() {
+    if (proxy != null) {
+      return proxy.getLocation();
+    }
+    return location;
+  }
+
+  @Override
+  public StopLocation getLocationGroup() {
+    if (proxy != null) {
+      return proxy.getLocationGroup();
+    }
+    return locationGroup;
+  }
+
+  /**
+   * Returns possible entity for the stop location in this order:
+   *  - stop
+   *  - location
+   *  - location group
+   */
+  public StopLocation getStopLocation(){
+    if(getStop() != null){
+      return getStop();
+    }
+    else if(getLocation() != null) {
+      return getLocation();
+    }
+    else if(getLocationGroup() != null){
+      return getLocationGroup();
+    }
+    return null;
   }
 
   public void setStop(StopLocation stop) {
@@ -279,6 +293,22 @@ public final class StopTime extends IdentityBean<Integer> implements
       return;
     }
     this.stop = stop;
+  }
+
+  public void setLocation(StopLocation location) {
+    if (proxy != null) {
+      proxy.setLocation(location);
+      return;
+    }
+    this.location = location;
+  }
+
+  public void setLocationGroup(StopLocation group) {
+    if (proxy != null) {
+      proxy.setLocationGroup(group);
+      return;
+    }
+    this.locationGroup = group;
   }
 
   public boolean isArrivalTimeSet() {
@@ -347,50 +377,17 @@ public final class StopTime extends IdentityBean<Integer> implements
     this.departureTime = MISSING_VALUE;
   }
 
-  @Deprecated
-  public int getMinArrivalTime() {
-    return minArrivalTime;
-  }
-
-  @Deprecated
-  public void setMinArrivalTime(int minArrivalTime) {
-    this.minArrivalTime = minArrivalTime;
-  }
 
   public int getStartPickupDropOffWindow() {
-    if (startPickupDropOffWindow != MISSING_VALUE) {
-      return startPickupDropOffWindow;
-    } else if(oldSpellingOfStartPickupDropOffWindow != MISSING_VALUE){
-      return oldSpellingOfStartPickupDropOffWindow;
-    } else {
-      return minArrivalTime;
-    }
+    return startPickupDropOffWindow;
   }
 
   public void setStartPickupDropOffWindow(int startPickupDropOffWindow) {
     this.startPickupDropOffWindow = startPickupDropOffWindow;
   }
 
-  @Deprecated
-  public int getMaxDepartureTime() {
-    return maxDepartureTime;
-  }
-
-  @Deprecated
-  public void setMaxDepartureTime(int maxDepartureTime) {
-    this.maxDepartureTime = maxDepartureTime;
-  }
-
   public int getEndPickupDropOffWindow() {
-    if (endPickupDropOffWindow != MISSING_VALUE) {
-      return endPickupDropOffWindow;
-    }
-    else if (oldSpellingOfEndPickupDropOffWindow != MISSING_VALUE) {
-      return oldSpellingOfEndPickupDropOffWindow;
-    }
-    else {
-      return maxDepartureTime;
-    }
+    return endPickupDropOffWindow;
   }
 
   public void setEndPickupDropOffWindow(int endPickupDropOffWindow) {
@@ -674,7 +671,7 @@ public final class StopTime extends IdentityBean<Integer> implements
 
   @Override
   public String toString() {
-    return "StopTime(seq=" + getStopSequence() + " stop=" + (getStop()==null?"NuLl":getStop().getId())
+    return "StopTime(seq=" + getStopSequence() + " stop=" + (getStopLocation()==null?"NuLl":getStopLocation().getId())
         + " trip=" + (getTrip()==null?"NuLl":getTrip().getId()) + " times="
         + StopTimeFieldMappingFactory.getSecondsAsString(getArrivalTime())
         + "-"
@@ -742,30 +739,5 @@ public final class StopTime extends IdentityBean<Integer> implements
     }
     this.freeRunningFlag = freeRunningFlag;
   }
-  @Deprecated
-  public void setOldSpellingOfStartPickupDropOffWindow(int time) {
-    oldDropOffSpellingWarning("start");
-    this.oldSpellingOfStartPickupDropOffWindow = time;
-  }
 
-  @Deprecated
-  public void setOldSpellingOfEndPickupDropOffWindow(int time) {
-    oldDropOffSpellingWarning("end");
-    this.oldSpellingOfEndPickupDropOffWindow = time;
-  }
-
-  private static void oldDropOffSpellingWarning(String type) {
-    _log.warn("This feed uses the old spelling of '{}_pickup_drop_off_window' ('dropoff' instead of 'drop_off'). "
-            + "Compatibility will be removed in the future, so please update your feed to be in line with the latest Flex V2 spec:"
-            + " https://github.com/MobilityData/gtfs-flex/commit/547200dfb", type);
-  }
-  @Deprecated
-  public int getOldSpellingOfStartPickupDropOffWindow() {
-    return this.oldSpellingOfStartPickupDropOffWindow;
-  }
-
-  @Deprecated
-  public int getOldSpellingOfEndPickupDropOffWindow() {
-    return oldSpellingOfEndPickupDropOffWindow;
-  }
 }
